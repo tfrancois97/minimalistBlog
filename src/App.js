@@ -1,92 +1,65 @@
+
 import './App.css'
-import React from 'react'
-import { useTable } from 'react-table'
+import React, {Component} from 'react'
+import ReactTable from 'react-table'
+import 'react-table/react-table.css'  
+import axios from 'axios'
 
-function Table({ columns, data }) {
-  // Use the state and functions returned from useTable to build your UI
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable({
-    columns,
-    data,
-  })
+export default class App extends Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      allPosts: [],
+      samplesPosts: [],
+      page: 0
+    }
+  }
+  componentDidMount() {
+    //Getting the post and initializing the first sample.
+    if(this.state.allPosts.length == 0){
+      this.getAllPosts()
+      //setSamplePostArray()
+    }
+  }
 
-  // Render the UI for your table
-  return (
-    <table {...getTableProps()}>
-      <thead>
-        {headerGroups.map(headerGroup => (
-          <tr {...headerGroup.getHeaderGroupProps()}>
-            {headerGroup.headers.map(column => (
-              <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-            ))}
-          </tr>
-        ))}
-      </thead>
-      <tbody {...getTableBodyProps()}>
-        {rows.map((row, i) => {
-          prepareRow(row)
-          return (
-            <tr {...row.getRowProps()}>
-              {row.cells.map(cell => {
-                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-              })}
-            </tr>
-          )
-        })}
-      </tbody>
-    </table>
-  )
-}
+  setSamplePostArray(){
+    let temporaryArray = []
+    for(let i = 0; i < 20; i++){
+      temporaryArray.push(this.state.allPosts[20 * this.state.page + i]);
+    }
+    this.state.samplesPosts = temporaryArray;
+  }
 
-function App() {
-  const columns = React.useMemo(
-    () => [
-      {
+  async getAllPosts(){
+    try{
+      const response = await axios.get('https://jsonplaceholder.typicode.com/posts/')
+      this.setState({allPosts: response.data})
+    }
+    catch(error){
+      console.log(error)
+    }
+  }
+
+  render(){
+    const columns =  [{
         Header: 'Minimalist-blog',
         columns : [
           {
             Header: 'Post title',
-            accessor: 'postTitle',
+            accessor: 'title',
           },
           {
-            Header: 'Number of  comments',
+            Header: 'Number of comments',
             accessor: 'numberComment',
           },
         ],
       },
-    ],
-    []
-  )
-
-  const data = [
-    {
-      postTitle:'test1',
-      numberComment:'123',
-    },
-    {
-      postTitle:'test2',
-      numberComment:'2',
-    }
-  ]
-  return (
-    <div className="App">
-      <Table columns={columns} data={data} />
-      <div className="TableNavigation">
-        <button>
-          PREVIOUS PAGE
-        </button>
-        <button>
-          NEXT PAGE
-        </button>
-
-      </div>
-    </div>
-  );
+    ]
+  
+    return (
+        <div className="App">
+          <ReactTable defaultPageSize={20} columns={columns} data={this.state.allPosts} />
+        </div>
+    )
+  }
 }
-
-export default App;

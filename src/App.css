@@ -8,14 +8,14 @@
   text-align: center;
 }
 
-table {
+.ReactTable {
   margin: 0 auto;
   width:580px;
   border-spacing: 0;
   border: 1px solid black;
 }
 @media (max-width:600px){
-  table{
+  .ReactTable{
     width:90%;
   }
 }
