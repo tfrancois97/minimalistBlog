@@ -1,4 +1,3 @@
-
 import './App.css'
 import React, {Component} from 'react'
 import ReactTable from 'react-table'
@@ -9,31 +8,38 @@ export default class App extends Component {
   constructor(props){
     super(props)
     this.state = {
-      allPosts: [],
-      samplesPosts: [],
-      page: 0
+      allPosts: []
     }
   }
+
   componentDidMount() {
-    //Getting the post and initializing the first sample.
-    if(this.state.allPosts.length == 0){
+    // Getting the post and initializing the first sample.
+    if(this.state.allPosts.length === 0){
       this.getAllPosts()
-      //setSamplePostArray()
     }
   }
 
-  setSamplePostArray(){
-    let temporaryArray = []
-    for(let i = 0; i < 20; i++){
-      temporaryArray.push(this.state.allPosts[20 * this.state.page + i]);
-    }
-    this.state.samplesPosts = temporaryArray;
+  // Asynchronous function that return the number of comments for each post.
+  async getNumberCommentForEveryPost(){
+    // Make sure to wait for the promise to finish and to become result.
+    await Promise.all(this.state.allPosts.map(async (element) =>{
+      try{
+        const response = await axios.get(
+          'https://jsonplaceholder.typicode.com/comments?postId=' + element.id)
+        element.numberComment = response.data.length
+      }catch(error){
+        console.log(error)
+      }
+    }))
+    this.setState({allPosts: this.state.allPosts})
   }
 
+  // Asynchronous function that return all posts from the api
   async getAllPosts(){
     try{
       const response = await axios.get('https://jsonplaceholder.typicode.com/posts/')
       this.setState({allPosts: response.data})
+      this.getNumberCommentForEveryPost()
     }
     catch(error){
       console.log(error)
@@ -56,6 +62,7 @@ export default class App extends Component {
       },
     ]
   
+    // ReactTable is a lightweight data table that work with hooks.
     return (
         <div className="App">
           <ReactTable defaultPageSize={20} columns={columns} data={this.state.allPosts} />
